@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, onBeforeUnmount, ref } from 'vue';
 import BarraNavegacion from '@/components/BarraNavegacion.vue';
 
 const clientes = ref([]);
@@ -13,8 +13,9 @@ const nuevoCliente = ref({
 });
 
 function guardarCliente() {
-  clientes.value.push({ ...nuevoCliente.value })
-  limpiarFormulario()
+  clientes.value.push({ ...nuevoCliente.value });
+  guardarEnLocalStorage();
+  limpiarFormulario();
 }
 
 function limpiarFormulario() {
@@ -24,8 +25,24 @@ function limpiarFormulario() {
     cedula: '',
     telefono: '',
     email: ''
-  }
+  };
 }
+
+function guardarEnLocalStorage() {
+  localStorage.setItem('clientesDB', JSON.stringify(clientes.value));
+}
+
+onMounted(() => {
+  const clientesGuardados = JSON.parse(localStorage.getItem('clientesDB'));
+
+  if (clientesGuardados) {
+    clientes.value = clientesGuardados;
+  }
+});
+
+onBeforeUnmount(() => {
+  guardarEnLocalStorage();
+});
 
 </script>
 
@@ -56,11 +73,9 @@ function limpiarFormulario() {
             </tr>
           </tbody>
         </table>
-
-
       </div>
 
-      <div class="col-md-6 bg-warning p-2">
+      <div class="col-md-6 bg-warning p-2 rounded">
         <h3>Crear cliente</h3>
         <form @submit.prevent="guardarCliente">
           <div class="form-group">
